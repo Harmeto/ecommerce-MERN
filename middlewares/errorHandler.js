@@ -6,7 +6,7 @@
  * @param {MethodDecorator} next - Next Middleware
  */
 const notFound = (_, res, next) => {
-  const error = new Error(`Not Found: ${req.originalUrl}`)
+  const error = new Error(`Not Found: ${_.originalUrl}`)
   res.status(404)
   next(error)
 }

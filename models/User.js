@@ -23,12 +23,10 @@ var userSchema = new mongoose.Schema({
     email:{
         type:String,
         required:true,
-        unique:true,
     },
     mobile:{
         type:String,
         required:true,
-        unique:true,
     },
     password:{
         type:String,
@@ -37,6 +35,14 @@ var userSchema = new mongoose.Schema({
     role:{
       type:String,
       default: "user"
+    },
+    deleted:{
+      type: Boolean, 
+      default: false
+    },
+    deletedAt:{
+      type: Date,
+      default: null
     }
 });
 
