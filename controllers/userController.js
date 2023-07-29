@@ -110,5 +110,25 @@ const deleteUser = asyncHandler(async (_, res) => {
   }
 })
 
+/**
+ * Modifica los campos de un usuario !password
+ * @async
+ * @function
+ * @param {Object} _ - Request
+ * @param {Object} res - Response
+ * @throws {Error} Arroja error si no encuentra usuarios
+ * @returns {Promise<void>} 
+ */
+const updateUser = asyncHandler(async (_, res) => {
+  const {_id} = _.user
+  const {first_name, last_name, email, mobile } = _.body
+  try {
+    const updateUser = await User.findByIdAndUpdate(_id, {first_name, last_name, email, mobile}, await User.where({delete:false}))
+    res.json({updateUser})
+  } catch (error) {
+    throw new Error(error)  
+  }
+})
 
-module.exports = {createUser, loginUser, getUsers, getUser, deleteUser}
+
+module.exports = {createUser, loginUser, getUsers, getUser, deleteUser, updateUser}
