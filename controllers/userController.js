@@ -1,6 +1,7 @@
 const { generateToken } = require('../config/jwtToken')
 const User = require('../models/User')
 const asyncHandler = require('express-async-handler')
+const validateMongoDbId = require('../utils/validateMongodbId')
 
 /**
  * Crea un usuario en la base de datos si correo no existe
@@ -81,6 +82,7 @@ const getUsers = asyncHandler(async (_, res) => {
  */
 const getUser = asyncHandler(async (_, res) => {
   const {id} = _.params
+  validateMongoDbId(id)
   try {
     const user = await User.findById(id, {deleted: false})
     if(user) return res.json({user})
@@ -101,6 +103,7 @@ const getUser = asyncHandler(async (_, res) => {
  */
 const deleteUser = asyncHandler(async (_, res) => {
   const {id} = _.params
+  validateMongoDbId(id)
   const currentDate = new Date();
   try {
     const user = await User.findByIdAndUpdate(id, {  deletedAt: currentDate, deleted: true }, await User.where({deleted: false}))
@@ -121,6 +124,7 @@ const deleteUser = asyncHandler(async (_, res) => {
  */
 const updateUser = asyncHandler(async (_, res) => {
   const {_id} = _.user
+  validateMongoDbId(_id)
   const {first_name, last_name, email, mobile } = _.body
   try {
     const updateUser = await User.findByIdAndUpdate(_id, {first_name, last_name, email, mobile}, await User.where({delete:false}))
@@ -130,5 +134,53 @@ const updateUser = asyncHandler(async (_, res) => {
   }
 })
 
+/**
+ * Bloquea un usuario por id
+ * @async
+ * @function
+ * @param {Object} _ - Request
+ * @param {Object} res - Response
+ * @throws {Error} Arroja error si no encuentra usuarios
+ * @returns {Promise<void>} 
+ */
+const blockUser = asyncHandler(async(_, res) =>{
+  const {id} = _.params
+  validateMongoDbId(id)
+  try {
+    const block = await User.findByIdAndUpdate(id, { isBlocked: true }, await User.where({delete:false}))
+    res.json({'message': 'User blocked'})
+  } catch (error) {
+    throw new Error(error)
+  }
+})
 
-module.exports = {createUser, loginUser, getUsers, getUser, deleteUser, updateUser}
+/**
+ * Desbloquea un usuario por id
+ * @async
+ * @function
+ * @param {Object} _ - Request
+ * @param {Object} res - Response
+ * @throws {Error} Arroja error si no encuentra usuarios
+ * @returns {Promise<void>} 
+ */
+const unBlockUser = asyncHandler(async(_, res) =>{
+  const {id} = _.params
+  validateMongoDbId(id)
+  try {
+    const block = await User.findByIdAndUpdate(id, { isBlocked: false }, await User.where({delete:false}))
+    res.json({'message': 'User unblocked'})
+  } catch (error) {
+    throw new Error(error)
+  }
+})
+
+module.exports = {
+  createUser, 
+  loginUser, 
+  getUsers, 
+  getUser, 
+  deleteUser, 
+  updateUser, 
+  blockUser,
+  unBlockUser
+}

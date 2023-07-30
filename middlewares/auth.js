@@ -41,7 +41,7 @@ const isAdmin = asyncHandler(async (_, res, next) => {
   const { email } = _.user
   const adminUser = await User.findOne({email})
   if(adminUser.role !== 'admin'){
-    throw new Error('Not Authorized')
+    throw new Error('User Not Authorized')
   }else{
     next()
   }

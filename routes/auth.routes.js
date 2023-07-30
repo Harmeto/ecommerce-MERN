@@ -5,16 +5,27 @@ const express = require('express')
  */
 const router = express.Router()
 const {authMiddleware, isAdmin} = require('../middlewares/auth')
-const { createUser, loginUser, getUsers, getUser, deleteUser, updateUser } = require('../controllers/userController')
+
+const { 
+  createUser, 
+  loginUser, 
+  getUsers, 
+  getUser, 
+  deleteUser, 
+  updateUser, 
+  blockUser,
+  unBlockUser 
+} = require('../controllers/userController')
 
 router.post('/register', createUser)
 router.post('/login', loginUser)
 router.get('/users', getUsers)
-router.delete('/user/:id', deleteUser)
-router.get('/user/:id', authMiddleware, isAdmin, getUser)
+
+// Admin 
+router.delete('/:id', deleteUser)
 router.put('/edit/', authMiddleware, updateUser)
-// todo 
-router.get('/block-user/:id', authMiddleware, isAdmin, getUser)
-router.get('/unblock-user/:id', authMiddleware, isAdmin, getUser)
+router.get('/:id', authMiddleware, isAdmin, getUser)
+router.put('/block-user/:id', authMiddleware, isAdmin, blockUser)
+router.put('/unblock-user/:id', authMiddleware, isAdmin, unBlockUser)
 
 module.exports = router
