@@ -5,11 +5,13 @@ const dotenv = require('dotenv').config()
 const PORT = process.env.PORT || 4000
 const authRouter = require('./routes/auth.routes')
 const { errorHandler, notFound } = require('./middlewares/errorHandler')
+const cookieParser = require('cookie-parser')
 
 dbConnect()
 
 app.use(express.urlencoded({extended: false}))
 app.use(express.json())
+app.use(cookieParser())
 
 app.use('/api/user', authRouter)
 

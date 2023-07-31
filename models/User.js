@@ -17,6 +17,7 @@ const bcrypt = require('bcrypt')
  * @property {Date} deletedAt | Fecha de eliminacion de usuario default null
  * @property {Date} timestamp | Fecha de creacion de usuario default now()
  * @property {Boolean} isBlocked | Determina si usuario esta blockeado o no default false
+ * @property {String} refreshToken | Token de acceso 
  */
 var userSchema = new mongoose.Schema({
     first_name:{
@@ -66,6 +67,9 @@ var userSchema = new mongoose.Schema({
     deletedAt:{
       type: Date,
       default: null
+    },
+    refreshToken:{
+      type:String
     }
 },
 {

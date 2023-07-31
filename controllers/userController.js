@@ -2,6 +2,8 @@ const { generateToken } = require('../config/jwtToken')
 const User = require('../models/User')
 const asyncHandler = require('express-async-handler')
 const validateMongoDbId = require('../utils/validateMongodbId')
+const { generateRefreshToken } = require('../config/refreshToken')
+const { verify } = require('jsonwebtoken')
 
 /**
  * Crea un usuario en la base de datos si correo no existe
@@ -40,6 +42,9 @@ const loginUser = asyncHandler(async (_, res) => {
   // check if user exists
   const findUser = await User.findOne({email, deleted: false});
   if(findUser && await findUser.isPasswordMatched(password)){
+    const refreshToken = generateRefreshToken(findUser?.id)
+    const user = await User.findByIdAndUpdate(findUser?.id, { refreshToken }, await User.where({deleted: false}))
+    res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: true, maxAge: 72*60*60*1000})
     res.json({
       _id: findUser?._id,
       first_name: findUser?.first_name,
@@ -51,6 +56,53 @@ const loginUser = asyncHandler(async (_, res) => {
   }else{
     throw new Error('Invalid Credentials')
   }
+})
+
+/**
+ * Retorna un access token a travez de un refresh
+ * @async
+ * @function
+ * @param {Object} _ - Request
+ * @param {Object} res - Response
+ * @throws {Error} Arroja error si no encuentra usuarios o no encuentra cookies
+ * @returns {Promise<void>} 
+ */
+const handleRefreshToken = asyncHandler(async(_, res) =>{
+  const cookie = req.cookies
+  if(!cookie.refreshToken) throw new Error('No Refresh Token in Cookies')
+  const refreshToken = cookie.refreshToken
+  const user = await User.findOne({refreshToken})
+  if(!user) throw new Error('No Refresh token in db or not matched')
+  verify(refreshToken, process.env.SECRET_TOKEN, (err, decoded)=>{
+    if(err || user.id !== decoded.id) throw new Error('There is something wrong with refresh token')
+    const accessToken = generateToken(user?.id)
+    res.json(accessToken)
+  })
+})
+
+/**
+ * Evento Logout, borra cokkies y refresh token
+ * @async
+ * @function
+ * @param {Object} _ - Request
+ * @param {Object} res - Response
+ * @throws {Error} Arroja error si no encuentra usuarios o no encuentra cookies
+ * @returns {Promise<void>} 
+ */
+const logout = asyncHandler(async(_,res)=>{
+  const cookie = req.cookies
+  if(!cookie.refreshToken) throw new Error('No Refresh Token in Cookies')
+  const refreshToken = cookie.refreshToken
+  const user = await User.findOne({refreshToken})
+  if(!user){
+    res.clearCookie('refreshToken', {httpOnly: true, sameSite: true, secure: true})
+    return res.sendStatus(204)
+  }
+  await User.findOneAndUpdate(refreshToken, {
+    refreshToken: ''
+  })
+  res.clearCookie('refreshToken', {httpOnly: true, sameSite: true, secure: true})
+  res.sendStatus(204)
 })
 
 /**
@@ -182,5 +234,7 @@ module.exports = {
   deleteUser, 
   updateUser, 
   blockUser,
-  unBlockUser
+  unBlockUser,
+  handleRefreshToken,
+  logout
 }

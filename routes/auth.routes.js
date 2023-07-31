@@ -14,12 +14,16 @@ const {
   deleteUser, 
   updateUser, 
   blockUser,
-  unBlockUser 
+  unBlockUser,
+  logout,
+  handleRefreshToken 
 } = require('../controllers/userController')
 
 router.post('/register', createUser)
 router.post('/login', loginUser)
 router.get('/users', getUsers)
+router.get('/logout', logout)
+router.get('/refresh', handleRefreshToken)
 
 // Admin 
 router.delete('/:id', deleteUser)
