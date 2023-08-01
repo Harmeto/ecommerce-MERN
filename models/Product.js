@@ -1,5 +1,20 @@
 const mongoose = require("mongoose"); // Erase if already required
 
+/**
+ * Esquema de Producto
+ * @typedef {Object} ProductSchema
+ * @property {String} title titulo del producto
+ * @property {String} slug slug asociado al producto
+ * @property {String} description descripcion corta del producto
+ * @property {Number} price precio del producto
+ * @property {String} category categoria del producto
+ * @property {String} brand marca asociada 
+ * @property {Number} quantity cantidad de stock
+ * @property {Number} sold cantidad vendida
+ * @property {Array<String>} images imagenes del producto
+ * @property {String} color colores disponibles
+ * @property {import('mongoose').ObjectId} rating calificacion dada por usuarios 
+*/ 
 // Declare the Schema of the Mongo model
 var productSchema = new mongoose.Schema(
   {
@@ -23,12 +38,12 @@ var productSchema = new mongoose.Schema(
       required: true,
     },
     category: {
-      type: mongoose.Schema.ObjectId,
-      ref: "Category",
+      type: String,
+      required: true
     },
     brand: {
       type: String,
-      enum: ["Apple", "Samsung", "Lenovo"],
+      required: true
     },
     quantity: {
       type: Number,
@@ -37,13 +52,14 @@ var productSchema = new mongoose.Schema(
     sold: {
       type: Number,
       default: 0,
+      // select: false | in case u dont want to show any property
     },
     images: {
       type: Array,
     },
     color: {
       type: String,
-      enum: ["Black", "Brown", "Red"],
+      required: true
     },
     ratings: [
       {
