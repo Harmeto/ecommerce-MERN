@@ -70,7 +70,10 @@ var userSchema = new mongoose.Schema({
     },
     refreshToken:{
       type:String
-    }
+    },
+    passwordChangeAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date
 },
 {
   timestamps: true
@@ -86,6 +89,9 @@ var userSchema = new mongoose.Schema({
  * @param {String} password | Toma la password ingresada por usuario y realiza un hash con 10 rounds  
  */
 userSchema.pre('save', async function(next){
+  if(!this.isModified('password')){
+    next()
+  }
   this.password = bcrypt.hashSync(this.password, 10, (hash)=>{
     this.password = hash
   })
@@ -102,6 +108,16 @@ userSchema.pre('save', async function(next){
  */
 userSchema.methods.isPasswordMatched = async function(enteredPassword){
   return bcrypt.compareSync(enteredPassword, this.password)
+}
+
+userSchema.methods.createPasswordResetToken = async function (){
+  const resettoken = crypto.randomBytes(32).toString('hex')
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resettoken)
+    .digest('hex')
+  this.passwordResetExpires = Date.now() + 30 * 60 * 1000
+  return resettoken
 }
 
 //Export the model
