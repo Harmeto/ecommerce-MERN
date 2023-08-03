@@ -4,6 +4,8 @@ const asyncHandler = require('express-async-handler')
 const validateMongoDbId = require('../utils/validateMongodbId')
 const { generateRefreshToken } = require('../config/refreshToken')
 const { verify } = require('jsonwebtoken')
+const crypto = require('crypto')
+const sendEmail = require('./emailController')
 
 /**
  * Crea un usuario en la base de datos si correo no existe
@@ -226,6 +228,15 @@ const unBlockUser = asyncHandler(async(_, res) =>{
   }
 })
 
+/**
+ * Cambia el password de un usuario
+ * @async
+ * @function
+ * @param {Object} _ - Request
+ * @param {Object} res - Response
+ * @throws {Error} Arroja error si no encuentra usuarios
+ * @returns {Promise<void>} 
+ */
 const updatePassword = asyncHandler(async(_,res)=> {
   const {_id} = _.user
   const { password } = _.body
@@ -244,6 +255,61 @@ const updatePassword = asyncHandler(async(_,res)=> {
   }
 })
 
+/**
+ * Retorna Token para realizar reset de password, se manda link a travez de email
+ * @async
+ * @function
+ * @param {Object} _ - Request
+ * @param {Object} res - Response
+ * @throws {Error} Arroja error si no encuentra usuarios y si no esta email en body
+ * @returns {Promise<void>} 
+ */
+const forgotPasswordToken = asyncHandler(async (_, res) => {
+  const { email } = _.body
+  try {
+    const user = await User.findOne({ email })
+    if(!user) throw new Error('User not found with this email')
+    const token = await user.createPasswordResetToken()
+    await user.save()
+    const resetURL = `Hi, please follow this link to reset your password. This link is valid untill 10 minutes from now <a href='http://localhost:5000/api/user/reset-password/${token}>Click Here</a>`
+    const data = {
+      to: email, 
+      subject: "Forgot Password Link",
+      html: resetURL,
+      text: "Hey User"
+    }
+    sendEmail(data)
+    res.json(token)
+  } catch (error) {
+    throw new Error(error)
+  }
+})
+
+/**
+ * Cambia el password del usuario
+ * @async
+ * @function
+ * @param {Object} _ - Request
+ * @param {Object} res - Response
+ * @throws {Error} Arroja error si no encuentra usuarios o no se encuentra token<Params> y password<Body>
+ * @returns {Promise<void>} 
+ */
+const resetPassword = asyncHandler(async (_, res) => {
+  const { password } = _.body
+  const { token } = _.params 
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
+  const user = await User.findOne({
+    passwordResetToken: hashedToken, 
+    passwordResetExpires: {$gt:Date.now()}
+  })
+  if(!user) throw new Error('Token expired, please try again later')
+  user.password = password
+  user.passwordResetToken = undefined
+  user.passwordResetExpires = undefined
+  await user.save()
+  res.json(user)
+})
+
 module.exports = {
   createUser, 
   loginUser, 
@@ -255,5 +321,7 @@ module.exports = {
   unBlockUser,
   handleRefreshToken,
   logout,
-  updatePassword
+  updatePassword,
+  forgotPasswordToken,
+  resetPassword
 }

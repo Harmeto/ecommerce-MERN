@@ -17,13 +17,17 @@ const {
   unBlockUser,
   logout,
   handleRefreshToken,
-  updatePassword 
+  updatePassword,
+  forgotPasswordToken ,
+  resetPassword
 } = require('../controllers/userController')
 
 router.post('/register', createUser)
 router.post('/login', loginUser)
 router.get('/users', getUsers)
 router.get('/logout', logout)
+router.post('/forgot-password-token', forgotPasswordToken)
+router.post('/reset-password/:token', resetPassword)
 router.put('/password',authMiddleware, updatePassword)
 router.get('/refresh', handleRefreshToken)
 
