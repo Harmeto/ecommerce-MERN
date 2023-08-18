@@ -5,7 +5,7 @@ const express = require('express')
  */
 const router = express.Router()
 const {authMiddleware, isAdmin} = require('../middlewares/auth')
-const { createBlog, updateBlog, getBlog, getAllBlog, deleteBlog, likeBlog } = require('../controllers/blogController')
+const { createBlog, updateBlog, getBlog, getAllBlog, deleteBlog, likeBlog, disLikeBlog } = require('../controllers/blogController')
 
 router.get('/', getAllBlog)
 router.post('/', authMiddleware, isAdmin, createBlog)
@@ -13,5 +13,6 @@ router.put('/edit/:id', authMiddleware, isAdmin, updateBlog)
 router.get('/:id', getBlog)
 router.delete('/:id', authMiddleware, isAdmin, deleteBlog)
 router.put('/likes', authMiddleware, likeBlog)
+router.put('/dislikes', authMiddleware, disLikeBlog)
 
 module.exports = router
