@@ -94,7 +94,7 @@ const handleRefreshToken = asyncHandler(async(_, res) =>{
 const logout = asyncHandler(async(_,res)=>{
   const cookie = _.cookies
   if(!cookie.refreshToken) throw new Error('No Refresh Token in Cookies')
-  const refreshToken = cookie.refreshToken
+  const {refreshToken} = cookie.refreshToken 
   const user = await User.findOne({refreshToken})
   if(!user){
     res.clearCookie('refreshToken', {httpOnly: true, sameSite: true, secure: true})
