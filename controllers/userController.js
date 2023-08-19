@@ -92,7 +92,7 @@ const handleRefreshToken = asyncHandler(async(_, res) =>{
  * @returns {Promise<void>} 
  */
 const logout = asyncHandler(async(_,res)=>{
-  const cookie = req.cookies
+  const cookie = _.cookies
   if(!cookie.refreshToken) throw new Error('No Refresh Token in Cookies')
   const refreshToken = cookie.refreshToken
   const user = await User.findOne({refreshToken})

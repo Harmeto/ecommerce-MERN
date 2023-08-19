@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const User = require('../models/User')
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongodbId");
 const { default: slugify } = require("slugify");
@@ -102,12 +103,12 @@ const getAllProduct = asyncHandler(async (_, res) => {
 
     // filtering
 
-    const queryObj = {..._.query}
+    const queryObj = {... _.query}
     const excludeFields = ['page', 'sort', 'limit', 'fields']
     excludeFields.forEach((el)=>delete queryObj[el])
 
     let queryString = JSON.stringify(queryObj)
-    queryString = queryObj.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`)
+    queryString = queryString.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`)
 
     let query = Product.find(JSON.parse(queryString))
     // endfiltering
@@ -153,10 +154,37 @@ const getAllProduct = asyncHandler(async (_, res) => {
   }
 });
 
+const addToWishList = asyncHandler(async(_, res)=> {
+  const {_id} = _.user
+  const {prodId} = _.body
+  try {
+    const user = await User.findById(_id)
+    const alreadyAdded = user.wishlist.find((_id)=> id.toString() === prodId)
+    if(alreadyAdded){
+      let user = await User.findByIdAndUpdate(_id, {
+        $pull:{wishlist: prodId},
+        },
+        {new: true}
+      )
+      return res.json(user)
+    }else{
+      let user = await User.findByIdAndUpdate(_id, {
+        $push:{wishlist: prodId},
+        },
+        {new: true}
+      )
+      return res.json(user)
+    }
+  } catch (error) {
+    throw new Error(error);
+  }
+})
+
 module.exports = {
   createProduct,
   getProduct,
   getAllProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  addToWishList
 };
