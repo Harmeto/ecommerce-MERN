@@ -159,7 +159,7 @@ const addToWishList = asyncHandler(async(_, res)=> {
   const {prodId} = _.body
   try {
     const user = await User.findById(_id)
-    const alreadyAdded = user.wishlist.find((_id)=> id.toString() === prodId)
+    const alreadyAdded = user.wishlist.find((_id)=> _id.toString() === prodId)
     if(alreadyAdded){
       let user = await User.findByIdAndUpdate(_id, {
         $pull:{wishlist: prodId},
