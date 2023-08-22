@@ -2,6 +2,8 @@ const Product = require("../models/Product");
 const User = require('../models/User')
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongodbId");
+const cloudinaryUploadImg = require('../utils/cloudinary');
+const fs = require('fs')
 const { default: slugify } = require("slugify");
 
 /**
@@ -238,6 +240,40 @@ const rating = asyncHandler(async(_, res)=> {
 
 })
 
+/**
+ * Sube imagenes a un producto
+ * @async
+ * @function
+ * @param {Object} _ - Request
+ * @param {Object} res - Response
+ * @throws {Error} Arroja error si no se envian los datos necesarios
+ * @returns {Promise<void>}
+ */
+const uploadImages = asyncHandler(async(_, res) => {
+  const {id} = _.params
+  validateMongoDbId(id)
+
+  try {
+    const uploader = (path) => cloudinaryUploadImg(path, 'images');
+    let urls = []
+    const files = _.files
+
+    for(const file of files ){
+      const {path} = file
+      const newPath = await uploader(path)
+      urls.push(newPath)
+      fs.unlinkSync(path)
+    }
+    const findProduct = await Product.findByIdAndUpdate(id, {
+      images: urls.map(file => { return file })
+    }, {new: true})
+
+    res.json(findProduct)
+  } catch (error) {
+    throw new Error(error);
+  }
+})
+
 module.exports = {
   createProduct,
   getProduct,
@@ -245,5 +281,6 @@ module.exports = {
   updateProduct,
   deleteProduct,
   addToWishList,
-  rating
+  rating, 
+  uploadImages
 };

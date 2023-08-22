@@ -5,7 +5,8 @@ const express = require('express')
  */
 const router = express.Router()
 const {authMiddleware, isAdmin} = require('../middlewares/auth')
-const { createBlog, updateBlog, getBlog, getAllBlog, deleteBlog, likeBlog, disLikeBlog } = require('../controllers/blogController')
+const { createBlog, updateBlog, getBlog, getAllBlog, deleteBlog, likeBlog, disLikeBlog, uploadImages } = require('../controllers/blogController')
+const { blogImgResize, uploadPhoto } = require('../middlewares/uploadImages')
 
 router.get('/', getAllBlog)
 router.post('/', authMiddleware, isAdmin, createBlog)
@@ -14,5 +15,7 @@ router.get('/:id', getBlog)
 router.delete('/:id', authMiddleware, isAdmin, deleteBlog)
 router.put('/likes', authMiddleware, likeBlog)
 router.put('/dislikes', authMiddleware, disLikeBlog)
+// admin upload blog img 
+router.put('/upload/:id', authMiddleware, isAdmin, uploadPhoto.array('images', 10), blogImgResize, uploadImages)
 
 module.exports = router
