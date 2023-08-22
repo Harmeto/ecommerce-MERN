@@ -5,7 +5,8 @@ const {
   getAllProduct,
   updateProduct,
   deleteProduct,
-  addToWishList
+  addToWishList,
+  rating
 } = require('../controllers/productController')
 const { isAdmin, authMiddleware } = require('../middlewares/auth')
 /**
@@ -23,5 +24,6 @@ router.delete('/:id', authMiddleware, isAdmin, deleteProduct)
 router.get('/', getAllProduct)
 router.get('/:id', getProduct)
 router.put('/wishlist', authMiddleware, addToWishList)
+router.put('/rating', authMiddleware, rating)
 
 module.exports = router

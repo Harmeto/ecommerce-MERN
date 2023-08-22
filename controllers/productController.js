@@ -154,6 +154,15 @@ const getAllProduct = asyncHandler(async (_, res) => {
   }
 });
 
+/**
+ * Añade un producto a WishList 
+ * @async
+ * @function
+ * @param {Object} _ - Request
+ * @param {Object} res - Response
+ * @throws {Error} Arroja error si no se encuentra el producto o user 
+ * @returns {Promise<void>}
+ */
 const addToWishList = asyncHandler(async(_, res)=> {
   const {_id} = _.user
   const {prodId} = _.body
@@ -180,11 +189,61 @@ const addToWishList = asyncHandler(async(_, res)=> {
   }
 })
 
+/**
+ * Añade rating a producto 
+ * @async
+ * @function
+ * @param {Object} _ - Request
+ * @param {Object} res - Response
+ * @throws {Error} Arroja error si no se encuentra el producto o user 
+ * @returns {Promise<void>}
+ */
+const rating = asyncHandler(async(_, res)=> {
+  const {_id} = _.user
+  const {star, prodId, comment} = _.body
+  try {
+    const product = await Product.findById(prodId)
+    let alreadyRated = product.ratings.find((userId) => userId.postedby.toString() === _id.toString() )
+
+    if(alreadyRated){
+      const updateRating = await Product.updateOne({
+        ratings:{$elemMatch: alreadyRated},
+      },  {
+        $set: {"ratings.$.star": star, "ratings.$.comment": comment}
+      }, 
+      {new:true})
+    }else{
+      const rateProduct = await Product.findByIdAndUpdate(prodId, {
+        $push:{
+          ratings: {
+            star: star, 
+            comment: comment,
+            postedby: _id,
+          },
+        },
+      },{new: true})
+    }
+    const getAllRatings = await Product.findById(prodId)
+    let totalrating = getAllRatings.ratings.length
+    let ratingSum = getAllRatings.ratings.map((item) => item.star ).reduce((prev, curr)=> prev + curr, 0) 
+    let actualRating = Math.round(ratingSum / totalrating )
+    let finalProduct = await Product.findByIdAndUpdate(prodId, 
+    {
+      totalRatings: actualRating,
+    }, {new: true})
+    res.json(finalProduct)
+  } catch (error) {
+     throw new Error(error);
+  }
+
+})
+
 module.exports = {
   createProduct,
   getProduct,
   getAllProduct,
   updateProduct,
   deleteProduct,
-  addToWishList
+  addToWishList,
+  rating
 };

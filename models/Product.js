@@ -11,6 +11,8 @@ const mongoose = require("mongoose"); // Erase if already required
  * @property {String} brand marca asociada 
  * @property {Number} quantity cantidad de stock
  * @property {Number} sold cantidad vendida
+ * @property {String} totalRating cantidad de estrellas de un producto
+ * @property {Array} rating rating del usuario hacia el producto
  * @property {Array<String>} images imagenes del producto
  * @property {String} color colores disponibles
  * @property {import('mongoose').ObjectId} rating calificacion dada por usuarios 
@@ -64,9 +66,14 @@ var productSchema = new mongoose.Schema(
     ratings: [
       {
         star: Number,
+        comment: String,
         postedby: { type: mongoose.Schema.ObjectId, ref: "User" },
       },
     ],
+    totalRatings:{
+      type: String,
+      default: 0
+    },
   },
   { timestamps: true }
 );
