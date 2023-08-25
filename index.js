@@ -13,12 +13,16 @@ const categoryRouter = require('./routes/productCategory.routes')
 const blogCategoryRouter = require('./routes/blogCategory.routes')
 const brandRouter = require('./routes/brand.routes')
 const colorRouter = require('./routes/color.routes')
+const enqRouter = require('./routes/enq.routes')
 const couponRouter = require('./routes/coupon.routes')
 
 // MIDDLEWARES
 const { errorHandler, notFound } = require('./middlewares/errorHandler')
 const cookieParser = require('cookie-parser')
 const morgan = require('morgan')
+const cors = require('cors')
+const credentials = require('./config/credentials')
+const corsOptions = require('./config/cors')
 
 
 // start config
@@ -28,6 +32,8 @@ app.use(express.urlencoded({extended: false}))
 app.use(express.json())
 app.use(cookieParser())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms'))
+app.use(credentials)
+app.use(cors(corsOptions)) 
 
 // end config
 
@@ -48,6 +54,9 @@ app.use('/api/blog-category', blogCategoryRouter)
 
 // colors
 app.use('/api/color', colorRouter)
+
+// enquiries
+app.use('/api/enq', enqRouter)
 
 //coupons
 app.use('/api/coupon', couponRouter)

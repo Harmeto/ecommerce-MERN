@@ -2,7 +2,7 @@ const Product = require("../models/Product");
 const User = require('../models/User')
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongodbId");
-const cloudinaryUploadImg = require('../utils/cloudinary');
+const {cloudinaryUploadImg, cloudinaryDeleteImg} = require('../utils/cloudinary');
 const fs = require('fs')
 const { default: slugify } = require("slugify");
 
@@ -250,9 +250,6 @@ const rating = asyncHandler(async(_, res)=> {
  * @returns {Promise<void>}
  */
 const uploadImages = asyncHandler(async(_, res) => {
-  const {id} = _.params
-  validateMongoDbId(id)
-
   try {
     const uploader = (path) => cloudinaryUploadImg(path, 'images');
     let urls = []
@@ -264,11 +261,27 @@ const uploadImages = asyncHandler(async(_, res) => {
       urls.push(newPath)
       fs.unlinkSync(path)
     }
-    const findProduct = await Product.findByIdAndUpdate(id, {
-      images: urls.map(file => { return file })
-    }, {new: true})
+    const images = urls.map(file => { return file })
+    res.json(images)
+  } catch (error) {
+    throw new Error(error);
+  }
+})
 
-    res.json(findProduct)
+/**
+ * Elimina imagenes a un producto
+ * @async
+ * @function
+ * @param {Object} _ - Request
+ * @param {Object} res - Response
+ * @throws {Error} Arroja error si no se envian los datos necesarios
+ * @returns {Promise<void>}
+ */
+const deleteImages = asyncHandler(async(_, res) => {
+  const {id} = _.params
+  try {
+    const deleter = cloudinaryDeleteImg(id, 'images');
+    res.json({message: 'Deleted'})
   } catch (error) {
     throw new Error(error);
   }
@@ -282,5 +295,6 @@ module.exports = {
   deleteProduct,
   addToWishList,
   rating, 
-  uploadImages
+  uploadImages,
+  deleteImages
 };

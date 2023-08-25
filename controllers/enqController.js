@@ -1,7 +1,6 @@
 const asyncHandler = require("express-async-handler");
-const Color = require("../models/Color");
 const validateMongoDbId = require("../utils/validateMongodbId");
-
+const Enq = require("../models/Enq");
 
 /**
  * Obtiene todas las categorias de blogs
@@ -12,10 +11,10 @@ const validateMongoDbId = require("../utils/validateMongodbId");
  * @throws {Error} Arroja error si no se incluyen datos necesarios
  * @returns {Promise<void>}
  */
-const getAllColor = asyncHandler(async(_, res)=> {
+const getAllEnq = asyncHandler(async(_, res)=> {
   try {
-    const color = await Color.find()
-    res.json(color)
+    const enq = await Enq.find()
+    res.json(enq)
   } catch (error) {
     throw new Error(error)
   }
@@ -30,12 +29,12 @@ const getAllColor = asyncHandler(async(_, res)=> {
  * @throws {Error} Arroja error si no se incluyen datos necesarios
  * @returns {Promise<void>}
  */
-const getColor = asyncHandler(async(_, res)=>{
+const getEnq = asyncHandler(async(_, res)=>{
   const {id} = _.params
   validateMongoDbId(id)
   try {
-    const color = await Color.findById(id)
-    res.json(color)
+    const enq = await Enq.findById(id)
+    res.json(enq)
   } catch (error) {
     throw new Error(error)
   }
@@ -50,10 +49,10 @@ const getColor = asyncHandler(async(_, res)=>{
  * @throws {Error} Arroja error si no se incluyen datos necesarios
  * @returns {Promise<void>}
  */
-const createColor = asyncHandler( async(_, res) => {
+const createEnq = asyncHandler( async(_, res) => {
   try {
-    const newColor = await Color.create(_.body)
-    res.json(newColor)
+    const newEnq = await Enq.create(_.body)
+    res.json(newEnq)
   } catch (error) {
     throw new Error(error)
   }
@@ -68,12 +67,12 @@ const createColor = asyncHandler( async(_, res) => {
  * @throws {Error} Arroja error si no se incluyen datos necesarios
  * @returns {Promise<void>}
  */
-const updateColor = asyncHandler(async(_, res)=>{
+const updateEnq = asyncHandler(async(_, res)=>{
   const {id} = _.params
   validateMongoDbId(id)
   try {
-    const updateColor = await Color.findByIdAndUpdate(id, _.body, { new: true })
-    res.json(updateColor)
+    const updateEnq = await Enq.findByIdAndUpdate(id, _.body, { new: true })
+    res.json(updateEnq)
   } catch (error) {
     throw new Error(error)
   }
@@ -88,15 +87,15 @@ const updateColor = asyncHandler(async(_, res)=>{
  * @throws {Error} Arroja error si no se incluyen datos necesarios
  * @returns {Promise<void>}
  */
-const deleteColor = asyncHandler(async(_, res)=>{
+const deleteEnq = asyncHandler(async(_, res)=>{
   const {id} = _.params
   validateMongoDbId(id)
   try {
-    const deleteColor = await Color.findOneAndDelete(id)
-    res.json(deleteColor)
+    const deleteEnq = await Enq.findOneAndDelete(id)
+    res.json(deleteEnq)
   } catch (error) {
     throw new Error(error)
   }
 })
 
-module.exports = { getAllColor, getColor, createColor, updateColor, deleteColor }
+module.exports = { getAllEnq, getEnq, createEnq, updateEnq, deleteEnq }
